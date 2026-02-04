@@ -1,0 +1,152 @@
+text,intent
+open youtube,open_app
+open chrome,open_app
+launch vs code,open_app
+start notepad,open_app
+open file explorer,open_app
+open settings,open_app
+close chrome,close_app
+close youtube,close_app
+close notepad,close_app
+exit chrome,close_app
+quit application,close_app
+
+find python tutorial,search
+search asp.net crud example,search
+look for weather today,search
+google dotnet interview questions,search
+search jobs for dotnet developer,search
+find sql server stored procedure examples,search
+
+what is the time,time
+tell me current time,time
+what time is it now,time
+what is today's date,time
+today's date please,time
+
+read my notes file,read_file
+open and read notes,read_file
+read todo list,read_file
+read the file in documents,read_file
+read my resume file,read_file
+
+write a note,write_file
+create a note,write_file
+save this text to file,write_file
+add task to todo list,write_file
+write this to my notes,write_file
+
+hello,reply
+hi there,reply
+how are you,reply
+what can you do,reply
+help me,reply
+thanks,reply
+
+tell me a joke,joke
+say something funny,joke
+make me laugh,joke
+tell a funny joke,joke
+crack a joke,joke
+
+exit program,exit
+close assistant,exit
+stop the assistant,exit
+bye,exit
+quit,exit
+
+please open chrome,open_app
+could you open notepad,open_app
+hey open youtube for me,open_app
+open vs code please,open_app
+launch chrome now,open_app
+start the calculator,open_app
+can you open file explorer,open_app
+open my browser,open_app
+open the settings app,open_app
+bring up notepad,open_app
+
+
+please close chrome,close_app
+could you close notepad,close_app
+hey close youtube for me,close_app
+exit chrome now,close_app
+stop the browser,close_app
+shut down notepad,close_app
+close the application,close_app
+terminate chrome,close_app
+end the app,close_app
+quit notepad please,close_app
+
+
+hey can you search python tutorials for me,search
+please find asp.net core examples,search
+look up sql server joins,search
+can you google python scraping,search
+search best dotnet projects,search
+find interview questions for c sharp,search
+search weather in jamnagar today,search
+look for fresher jobs in rajkot,search
+find tutorials for web development,search
+google how to use entity framework,search
+
+
+what time is it right now,time
+can you tell me the time,time
+give me the current time,time
+what is the time please,time
+tell me today’s date and time,time
+what’s the date today,time
+current date please,time
+what day is it today,time
+
+
+can you read my notes file,read_file
+please open and read the document,read_file
+read the file from documents folder,read_file
+open my resume and read it,read_file
+read my todo list for me,read_file
+read the last note,read_file
+show me the contents of my notes,read_file
+read the text file on desktop,read_file
+
+
+please write this to my notes,write_file
+save this text to a file,write_file
+add this to my todo list,write_file
+create a new note for me,write_file
+write down what I say,write_file
+store this message in a file,write_file
+make a note of this,write_file
+append this to my notes,write_file
+
+
+hello there,reply
+hi how are you,reply
+what can you help me with,reply
+can you assist me,reply
+talk to me,reply
+how can you help,reply
+who are you,reply
+what are your features,reply
+
+
+tell me a funny joke,joke
+say a joke please,joke
+make me laugh right now,joke
+do you know any jokes,joke
+crack a funny joke for me,joke
+tell me something hilarious,joke
+i need a joke,joke
+say something funny, joke
+
+
+please close the assistant,exit
+i want to exit now,exit
+stop running,exit
+shut yourself down,exit
+end this program,exit
+i’m done,exit
+goodbye,exit
+see you later,exit
+
