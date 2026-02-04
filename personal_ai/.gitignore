@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+app_permissions.json
+intent_model.pkl
+logs/
