@@ -5,3 +5,8 @@ __pycache__/
 app_permissions.json
 intent_model.pkl
 logs/
+intent_model.pkl
+notes.txt
+app_permissions.json
+.venv/
+__pycache__/
