@@ -150,3 +150,173 @@ i’m done,exit
 goodbye,exit
 see you later,exit
 
+hi,reply
+hii,reply
+hello,reply
+hey,reply
+open youtube,open_app
+you tube,open_app
+youytube,open_app
+close vs code,close_app
+quit chrome,close_app
+close youtube,close_app
+
+text,intent
+open chrome,open_app
+please open chrome,open_app
+could you open chrome for me,open_app
+launch chrome now,open_app
+start my browser,open_app
+open google chrome,open_app
+open the browser,open_app
+bring up chrome,open_app
+open youtube,open_app
+open you tube,open_app
+open youytube,open_app
+start youtube app,open_app
+launch youtube please,open_app
+open vs code,open_app
+open vscode,open_app
+open vs-code,open_app
+start the code editor,open_app
+launch visual studio code,open_app
+open notepad,open_app
+start notes app,open_app
+open file explorer,open_app
+open my files,open_app
+
+close chrome,close_app
+please close chrome,close_app
+quit chrome,close_app
+exit the browser,close_app
+shut down chrome,close_app
+terminate chrome,close_app
+close youtube,close_app
+quit youtube,close_app
+close you tube,close_app
+exit youtube now,close_app
+stop youtube,close_app
+close vs code,close_app
+close vscode,close_app
+quit visual studio code,close_app
+exit code editor,close_app
+close notepad,close_app
+quit notepad,close_app
+exit notes app,close_app
+
+find python tutorial,search
+search python tutorials for beginners,search
+hey can you search python tutorials for me,search
+google asp.net crud example,search
+look for dotnet interview questions,search
+search sql server joins,search
+find jobs for dotnet developer,search
+search weather in jamnagar today,search
+look up best python scraping libraries,search
+find youtube videos for c sharp,search
+search on youtube python tutorial,search
+find songs on youtube,search
+
+what is the time,time
+tell me the current time,time
+what time is it now,time
+what is today's date,time
+tell me today's date,time
+what day is it today,time
+current time please,time
+today's date please,time
+
+read my notes file,read_file
+open and read notes,read_file
+read the notes please,read_file
+show my notes,read_file
+read todo list,read_file
+read the file in documents,read_file
+open my notes and read them,read_file
+read the last note,read_file
+
+write a note,write_file
+create a new note,write_file
+save this to my notes,write_file
+add this to my todo list,write_file
+write this down for me,write_file
+store this message in notes,write_file
+append this to notes,write_file
+make a note of this,write_file
+
+hi,reply
+hii,reply
+hello,reply
+hey,reply
+hello there,reply
+hi assistant,reply
+hey buddy,reply
+what can you do,reply
+who are you,reply
+help me,reply
+thanks,reply
+thank you,reply
+
+tell me a joke,joke
+say a joke please,joke
+make me laugh,joke
+do you know any jokes,joke
+crack a funny joke for me,joke
+tell me something funny,joke
+i need a joke,joke
+tell me a tech joke,joke
+
+exit program,exit
+close assistant,exit
+stop the assistant,exit
+bye,exit
+quit,exit
+goodbye,exit
+see you later,exit
+i am done,exit
+
+
+hi,reply
+hello,reply
+hii,reply
+time,time
+date,time
+write,write_file
+note,write_file
+read,read_file
+readfile,read_file
+open google,open_app
+google,open_app
+open note,open_app
+note,write_file
+
+exit,exit
+quit,exit
+close assistant,exit
+stop the assistant,exit
+end program,exit
+bye,exit
+goodbye,exit
+i am done,exit
+leave now,exit
+terminate assistant,exit
+
+yo,reply
+sup,reply
+hey yar,reply
+hy yar,reply
+hhy,reply
+hello bhai,reply
+
+i m done,exit
+im done,exit
+i am done,exit
+i m dne,exit
+
+done with chrome,close_app
+i am done with chrome,close_app
+
+bro what the time,time
+what the time right now,time
+noew,time
+todays date,time
