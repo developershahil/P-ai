@@ -1,12 +1,14 @@
 import joblib
 import numpy as np
-from config import MODE, CONF_THRESHOLD
-from actions import resolve_app
-from actions import (
+
+from core.config import MODE, CONF_THRESHOLD
+from actions.app_actions import resolve_app
+from actions.app_actions import (
     open_app_action, close_app_action, search_action,
     time_action, joke_action, write_file_action, read_file_action,
     reply_action, speak, listen_text
 )
+
 
 print(f"🔧 Running in {MODE.upper()} mode")
 

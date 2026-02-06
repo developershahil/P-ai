@@ -1,6 +1,9 @@
 import os, subprocess, webbrowser, datetime, random
-from permissions import load_permissions, save_permissions, is_blocked_exe
-from config import MODE
+
+from core.config import MODE
+from security.permissions import load_permissions, save_permissions, is_blocked_exe
+
+
 
 NOTES_FILE = "notes.txt"
 

@@ -9,7 +9,7 @@ import numpy as np
 import joblib
 
 # --------- Load & clean data ----------
-df = pd.read_csv("intents.csv")
+df = pd.read_csv("data/intents.csv")
 
 def normalize(text: str) -> str:
     text = text.lower()
