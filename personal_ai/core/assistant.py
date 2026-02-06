@@ -12,7 +12,7 @@ from actions.app_actions import (
 
 print(f"🔧 Running in {MODE.upper()} mode")
 
-MODEL_PATH = "intent_model.pkl"
+MODEL_PATH = "models/intent_model.pkl"
 model = joblib.load(MODEL_PATH)
 
 def predict_intent_with_confidence(text: str):

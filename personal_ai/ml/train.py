@@ -62,5 +62,5 @@ print(f"📊 CV Accuracy: {scores.mean():.3f} ± {scores.std():.3f}")
 model.fit(X, y)
 
 # --------- Save ----------
-joblib.dump(model, "intent_model.pkl")
+joblib.dump(model, "models/intent_model.pkl")
 print("✅ Trained with improved normalization + n-grams + class weights")
