@@ -1,8 +1,11 @@
 # hard_tester_v2.py
+from pathlib import Path
+
 import joblib
 import numpy as np
 
-MODEL_PATH = "intent_model.pkl"
+BASE_DIR = Path(__file__).resolve().parents[1]
+MODEL_PATH = BASE_DIR / "models" / "intent_model.pkl"
 model = joblib.load(MODEL_PATH)
 
 def predict_intent_with_confidence(text: str):

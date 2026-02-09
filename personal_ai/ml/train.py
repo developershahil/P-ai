@@ -1,5 +1,8 @@
-import pandas as pd
+import os
 import re
+from pathlib import Path
+
+import pandas as pd
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -9,7 +12,22 @@ import numpy as np
 import joblib
 
 # --------- Load & clean data ----------
-df = pd.read_csv("data/intents.csv")
+BASE_DIR = Path(__file__).resolve().parents[1]
+data_path = BASE_DIR / "data" / "intents.csv"
+auto_data_path = BASE_DIR / "data" / "auto_intents.csv"
+AUTO_MIN_CONF = float(os.getenv("AUTO_LEARN_MIN_CONF", "0.75"))
+
+df = pd.read_csv(data_path)
+
+if auto_data_path.exists():
+    auto_df = pd.read_csv(auto_data_path)
+    if {"text", "intent"}.issubset(auto_df.columns):
+        if "confidence" in auto_df.columns:
+            auto_df = auto_df[auto_df["confidence"].astype(float) >= AUTO_MIN_CONF]
+        auto_df = auto_df[["text", "intent"]]
+        df = pd.concat([df, auto_df], ignore_index=True)
+
+df = df.dropna(subset=["text", "intent"]).drop_duplicates()
 
 def normalize(text: str) -> str:
     text = text.lower()
@@ -46,7 +64,8 @@ class_weight = dict(zip(classes, weights))
 clf = LogisticRegression(
     max_iter=4000,
     C=2.0,              # a bit less regularization (can try 1.0–3.0)
-    n_jobs=None
+    n_jobs=None,
+    class_weight=class_weight
 )
 
 model = Pipeline([
@@ -62,5 +81,7 @@ print(f"📊 CV Accuracy: {scores.mean():.3f} ± {scores.std():.3f}")
 model.fit(X, y)
 
 # --------- Save ----------
-joblib.dump(model, "models/intent_model.pkl")
+model_dir = BASE_DIR / "models"
+model_dir.mkdir(parents=True, exist_ok=True)
+joblib.dump(model, model_dir / "intent_model.pkl")
 print("✅ Trained with improved normalization + n-grams + class weights")

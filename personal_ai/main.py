@@ -1,4 +1,4 @@
-from core.assistant import speak, listen_text, handle_text
+from .core.assistant import speak, listen_text, handle_text
 
 if __name__ == "__main__":
     speak("hello")

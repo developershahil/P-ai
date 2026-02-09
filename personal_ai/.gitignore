@@ -10,3 +10,4 @@ notes.txt
 app_permissions.json
 .venv/
 __pycache__/
+auto_intents.csv
