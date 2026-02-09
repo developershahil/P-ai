@@ -1,4 +1,4 @@
-import os, subprocess, webbrowser, datetime, random
+import os, subprocess, webbrowser, datetime, random, re
 
 from core.config import MODE
 from security.permissions import load_permissions, save_permissions, is_blocked_exe
@@ -115,9 +115,9 @@ def close_app_action(text: str):
 
 def search_action(text: str):
     q = text.lower()
-    for w in ["search", "find", "look for", "google", "on youtube", "youtube"]:
-        q = q.replace(w, "")
-    q = q.strip()
+    for phrase in ["search", "find", "look for", "google", "on youtube", "youtube"]:
+        q = re.sub(rf"\b{re.escape(phrase)}\b", "", q)
+    q = re.sub(r"\s+", " ", q).strip()
     if not q:
         speak("What should I search for?")
         q = listen_text().strip()
@@ -125,7 +125,7 @@ def search_action(text: str):
             speak("Cancelled.")
             return
 
-    if "youtube" in text.lower():
+    if re.search(r"\byoutube\b", text.lower()):
         url = f"https://www.youtube.com/results?search_query={q}"
     else:
         url = f"https://www.google.com/search?q={q}"
