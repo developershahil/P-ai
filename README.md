@@ -120,6 +120,12 @@ Auto-learning (no large dataset required):
   - AUTO_LEARN=0 to disable logging
   - AUTO_LEARN_MIN_CONF=0.75 to raise/lower the confidence gate
 
+Daily auto-training + model comparison:
+- Run `python -m personal_ai.learning.deployer` to train daily (uses auto-intents + base intents).
+- Set `RUN_ONCE=1` to run once (for cron/scheduler use).
+- The trainer compares candidate vs current model and only promotes if accuracy improves.
+- Set `MODEL_IMPROVEMENT_THRESHOLD=0.01` to adjust the promotion threshold.
+
 ------------------------------------------------------------------------------------------------------
 
 📌 Notes
