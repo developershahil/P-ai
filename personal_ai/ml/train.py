@@ -1,5 +1,7 @@
-import pandas as pd
 import re
+from pathlib import Path
+
+import pandas as pd
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -9,7 +11,9 @@ import numpy as np
 import joblib
 
 # --------- Load & clean data ----------
-df = pd.read_csv("data/intents.csv")
+BASE_DIR = Path(__file__).resolve().parents[1]
+data_path = BASE_DIR / "data" / "intents.csv"
+df = pd.read_csv(data_path)
 
 def normalize(text: str) -> str:
     text = text.lower()
@@ -62,5 +66,7 @@ print(f"📊 CV Accuracy: {scores.mean():.3f} ± {scores.std():.3f}")
 model.fit(X, y)
 
 # --------- Save ----------
-joblib.dump(model, "models/intent_model.pkl")
+model_dir = BASE_DIR / "models"
+model_dir.mkdir(parents=True, exist_ok=True)
+joblib.dump(model, model_dir / "intent_model.pkl")
 print("✅ Trained with improved normalization + n-grams + class weights")

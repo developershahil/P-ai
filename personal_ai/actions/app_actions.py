@@ -1,11 +1,16 @@
-import os, subprocess, webbrowser, datetime, random, re
+import datetime
+import os
+import random
+import re
+import subprocess
+import webbrowser
+from pathlib import Path
 
-from core.config import MODE
-from security.permissions import load_permissions, save_permissions, is_blocked_exe
+from ..core.config import MODE
+from ..security.permissions import load_permissions, save_permissions, is_blocked_exe
 
-
-
-NOTES_FILE = "notes.txt"
+BASE_DIR = Path(__file__).resolve().parents[1]
+NOTES_FILE = BASE_DIR / "notes.txt"
 
 APP_ALIASES = {
     "chrome": ["chrome", "google chrome", "browser", "my browser", "google", "chron", "chrome"],
