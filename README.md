@@ -113,6 +113,13 @@ Confidence gating for noisy inputs
 Active-learning ready (can log corrections for retraining)
 You can keep improving accuracy by adding more examples to data/intents.csv.
 
+Auto-learning (no large dataset required):
+- The assistant logs high-confidence interactions to data/auto_intents.csv.
+- The training script automatically includes auto_intents.csv when present.
+- Control with environment variables:
+  - AUTO_LEARN=0 to disable logging
+  - AUTO_LEARN_MIN_CONF=0.75 to raise/lower the confidence gate
+
 ------------------------------------------------------------------------------------------------------
 
 📌 Notes
@@ -175,4 +182,3 @@ Allow adding new skills (weather, reminders, email, music) as plug-and-play modu
 👤 Author
 Sahil Rathod
 GitHub: https://github.com/developershahil
-

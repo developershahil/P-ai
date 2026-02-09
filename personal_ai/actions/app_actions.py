@@ -4,6 +4,7 @@ import random
 import re
 import subprocess
 import webbrowser
+from importlib.util import find_spec
 from pathlib import Path
 
 from ..core.config import MODE
@@ -11,6 +12,15 @@ from ..security.permissions import load_permissions, save_permissions, is_blocke
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 NOTES_FILE = BASE_DIR / "notes.txt"
+
+_PYTTSX3_AVAILABLE = find_spec("pyttsx3") is not None
+_SPEECH_RECOGNITION_AVAILABLE = find_spec("speech_recognition") is not None
+
+if _PYTTSX3_AVAILABLE:
+    import pyttsx3
+
+if _SPEECH_RECOGNITION_AVAILABLE:
+    import speech_recognition as sr
 
 APP_ALIASES = {
     "chrome": ["chrome", "google chrome", "browser", "my browser", "google", "chron", "chrome"],
@@ -31,30 +41,31 @@ KNOWN_APPS = {
 
 def speak(text: str):
     if MODE == "local":
-        try:
-            import pyttsx3
-            engine = pyttsx3.init()
-            engine.say(text)
-            engine.runAndWait()
-        except Exception:
-            print(text)
+        if _PYTTSX3_AVAILABLE:
+            try:
+                engine = pyttsx3.init()
+                engine.say(text)
+                engine.runAndWait()
+                return
+            except Exception:
+                pass
+        print(text)
     else:
         print(text)
 
 def listen_text():
     if MODE == "local":
-        try:
-            import speech_recognition as sr
-            r = sr.Recognizer()
-            with sr.Microphone() as src:
-                print("🎤 Listening...")
-                audio = r.listen(src)
-            return r.recognize_google(audio)
-        except Exception:
-            speak("Sorry, I didn't catch that.")
-            return ""
-    else:
+        if _SPEECH_RECOGNITION_AVAILABLE:
+            try:
+                r = sr.Recognizer()
+                with sr.Microphone() as src:
+                    print("🎤 Listening...")
+                    audio = r.listen(src)
+                return r.recognize_google(audio)
+            except Exception:
+                speak("Sorry, I didn't catch that. Please type your message.")
         return input("You: ")
+    return input("You: ")
 
 def resolve_app(text: str):
     t = text.lower()

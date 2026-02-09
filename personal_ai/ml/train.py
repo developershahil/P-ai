@@ -1,3 +1,4 @@
+import os
 import re
 from pathlib import Path
 
@@ -13,7 +14,20 @@ import joblib
 # --------- Load & clean data ----------
 BASE_DIR = Path(__file__).resolve().parents[1]
 data_path = BASE_DIR / "data" / "intents.csv"
+auto_data_path = BASE_DIR / "data" / "auto_intents.csv"
+AUTO_MIN_CONF = float(os.getenv("AUTO_LEARN_MIN_CONF", "0.75"))
+
 df = pd.read_csv(data_path)
+
+if auto_data_path.exists():
+    auto_df = pd.read_csv(auto_data_path)
+    if {"text", "intent"}.issubset(auto_df.columns):
+        if "confidence" in auto_df.columns:
+            auto_df = auto_df[auto_df["confidence"].astype(float) >= AUTO_MIN_CONF]
+        auto_df = auto_df[["text", "intent"]]
+        df = pd.concat([df, auto_df], ignore_index=True)
+
+df = df.dropna(subset=["text", "intent"]).drop_duplicates()
 
 def normalize(text: str) -> str:
     text = text.lower()
@@ -50,7 +64,8 @@ class_weight = dict(zip(classes, weights))
 clf = LogisticRegression(
     max_iter=4000,
     C=2.0,              # a bit less regularization (can try 1.0–3.0)
-    n_jobs=None
+    n_jobs=None,
+    class_weight=class_weight
 )
 
 model = Pipeline([
