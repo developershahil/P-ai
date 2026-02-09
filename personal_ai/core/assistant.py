@@ -1,22 +1,57 @@
-import joblib
-import numpy as np
+from importlib.util import find_spec
+from pathlib import Path
 
-from core.config import MODE, CONF_THRESHOLD
-from actions.app_actions import resolve_app
-from actions.app_actions import (
+joblib = None
+np = None
+if find_spec("joblib") is not None:
+    import joblib  # type: ignore[assignment]
+if find_spec("numpy") is not None:
+    import numpy as np  # type: ignore[assignment]
+
+from .config import MODE, CONF_THRESHOLD, AUTO_LEARN, AUTO_LEARN_MIN_CONF
+from ..actions.app_actions import resolve_app
+from ..actions.app_actions import (
     open_app_action, close_app_action, search_action,
     time_action, joke_action, write_file_action, read_file_action,
     reply_action, speak, listen_text
 )
+from ..learning.collector import log_sample
 
 
 print(f"🔧 Running in {MODE.upper()} mode")
 
-MODEL_PATH = "models/intent_model.pkl"
-model = joblib.load(MODEL_PATH)
+BASE_DIR = Path(__file__).resolve().parents[1]
+MODEL_PATH = BASE_DIR / "models" / "intent_model.pkl"
+if MODEL_PATH.exists() and joblib is not None:
+    model = joblib.load(MODEL_PATH)
+else:
+    model = None
+    if joblib is None:
+        print("⚠️ joblib is not installed. Install requirements to enable the model.")
+    elif not MODEL_PATH.exists():
+        print("⚠️ Model not found. Train it with: python -m personal_ai.ml.train")
+
+RULE_KEYWORDS = {
+    "open_app": ["open", "launch", "start"],
+    "close_app": ["close", "quit", "exit app", "stop"],
+    "search": ["search", "find", "look up", "google"],
+    "time": ["time", "date", "day"],
+    "joke": ["joke", "funny"],
+    "write_file": ["write", "note", "save"],
+    "read_file": ["read", "show notes", "notes"],
+    "reply": ["hello", "hi", "hey", "yo", "sup"],
+    "exit": ["bye", "exit", "stop assistant", "quit"],
+}
 
 def predict_intent_with_confidence(text: str):
-    probs = model.predict_proba([text.lower()])[0]
+    text = text.lower()
+    if model is None or np is None:
+        for intent, keys in RULE_KEYWORDS.items():
+            if any(k in text for k in keys):
+                return intent, 0.45
+        return "reply", 0.25
+
+    probs = model.predict_proba([text])[0]
     labels = model.classes_
     best_idx = int(np.argmax(probs))
     return labels[best_idx], float(probs[best_idx])
@@ -28,8 +63,7 @@ def active_learning_feedback(text: str, predicted_intent: str):
         speak("Okay, what did you mean? Say one of: open_app, close_app, search, time, read_file, write_file, reply, joke, exit.")
         correct = listen_text().strip()
         if correct:
-            with open("intents.csv", "a", encoding="utf-8") as f:
-                f.write(f"\n{text},{correct}")
+            log_sample(text=text, intent=correct, confidence=1.0, source="corrected")
             speak("Thanks! I’ll learn from this next time.")
 
 def allow_low_confidence(text, conf):
@@ -85,6 +119,9 @@ def handle_text(text: str):
 
     else:
         speak("Sorry, I didn't understand.")
+
+    if model is not None and AUTO_LEARN and conf >= AUTO_LEARN_MIN_CONF:
+        log_sample(text=text, intent=intent, confidence=conf, source="auto")
 
     # Optional: active learning feedback
     # active_learning_feedback(text, intent)
