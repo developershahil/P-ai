@@ -58,14 +58,14 @@ source .venv/bin/activate        # Linux/Mac/Codespaces
 
 pip install -r requirements.txt
 
-2️⃣ Train the Model
-python ml/train.py
+2️⃣ Train the Model (module-based)
+python -m personal_ai.ml.train
 This creates:
 models/intent_model.pkl
 Model files are ignored by Git (models/*.pkl) and will update locally after each training.
 
-3️⃣ Run the Assistant
-python main.py
+3️⃣ Run the Assistant (module-based)
+python -m personal_ai.main
 You’ll see:
 🔧 Running in DEV mode
 Personal AI ready.
@@ -97,7 +97,7 @@ The assistant only scans approved locations and never acts without consent.
 🧪 Testing
 
 Run intent tests:
-python tests/tester.py
+python -m personal_ai.tests.tester
 Example output:
 ✅ PASS | 'open chrome' → open_app
 ❌ FAIL | 'exit' → close_app
@@ -112,6 +112,13 @@ Balanced class weights
 Confidence gating for noisy inputs
 Active-learning ready (can log corrections for retraining)
 You can keep improving accuracy by adding more examples to data/intents.csv.
+
+Auto-learning (no large dataset required):
+- The assistant logs high-confidence interactions to data/auto_intents.csv.
+- The training script automatically includes auto_intents.csv when present.
+- Control with environment variables:
+  - AUTO_LEARN=0 to disable logging
+  - AUTO_LEARN_MIN_CONF=0.75 to raise/lower the confidence gate
 
 ------------------------------------------------------------------------------------------------------
 
@@ -175,6 +182,3 @@ Allow adding new skills (weather, reminders, email, music) as plug-and-play modu
 👤 Author
 Sahil Rathod
 GitHub: https://github.com/developershahil
-
-
-
