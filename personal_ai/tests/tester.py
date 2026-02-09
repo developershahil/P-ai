@@ -1,11 +1,20 @@
 # hard_tester_v2.py
+from importlib.util import find_spec
 from pathlib import Path
 
-import joblib
-import numpy as np
+joblib = None
+np = None
+if find_spec("joblib") is not None:
+    import joblib  # type: ignore[assignment]
+if find_spec("numpy") is not None:
+    import numpy as np  # type: ignore[assignment]
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODEL_PATH = BASE_DIR / "models" / "intent_model.pkl"
+if joblib is None or np is None:
+    raise SystemExit("Dependencies missing. Install requirements to run tests.")
+if not MODEL_PATH.exists():
+    raise SystemExit("Model not found. Train it with: python -m personal_ai.ml.train")
 model = joblib.load(MODEL_PATH)
 
 def predict_intent_with_confidence(text: str):
