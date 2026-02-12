@@ -6,6 +6,18 @@ Designed to run safely with explicit user permissions and supports DEV mode (Cod
 ⚠️ System-level features (open/close apps, file access) require running locally on Windows.
 GitHub Codespaces is used for development & testing logic (DEV mode).
 
+📦 Version
+
+Current release: **0.0.1**
+
+Features included in version 0.0.1:
+- Voice & text assistant with intent detection
+- Multi-command parsing (`and`, `then`, `and then`)
+- Entity extraction (app/platform/search/reminder entities)
+- Reminder scheduling with persistent JSON storage + background checker
+- Permission-based app control (DEV/LOCAL behavior)
+- Notes, time/date, jokes, and web search actions
+
 ------------------------------------------------------------------------------------------------------
 
 ✨ Features
@@ -58,6 +70,9 @@ source .venv/bin/activate        # Linux/Mac/Codespaces
 
 pip install -r requirements.txt
 
+# Install package in editable mode (recommended for imports + tests)
+pip install -e .
+
 2️⃣ Train the Model (module-based)
 python -m personal_ai.ml.train
 This creates:
@@ -98,6 +113,9 @@ The assistant only scans approved locations and never acts without consent.
 
 Run intent tests:
 python -m personal_ai.tests.tester
+
+Run pytest:
+pytest -q
 Example output:
 ✅ PASS | 'open chrome' → open_app
 ❌ FAIL | 'exit' → close_app
@@ -125,6 +143,22 @@ Daily auto-training + model comparison:
 - Set `RUN_ONCE=1` to run once (for cron/scheduler use).
 - The trainer compares candidate vs current model and only promotes if accuracy improves.
 - Set `MODEL_IMPROVEMENT_THRESHOLD=0.01` to adjust the promotion threshold.
+
+
+🛡️ Safe Backup Branch Script
+
+Use `safe_version.py` to create a semver backup branch and push it to origin:
+
+```bash
+python safe_version.py --message "chore: backup before risky change"
+```
+
+What it does:
+- Detects current branch and working tree state
+- Computes next semantic version (`vX.Y.Z`) from existing tags
+- Creates `safe/vX.Y.Z` branch
+- Commits staged changes only when there are no unstaged/untracked files
+- Pushes backup branch to `origin`
 
 ------------------------------------------------------------------------------------------------------
 
