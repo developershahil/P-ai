@@ -9,6 +9,8 @@ if find_spec("numpy") is not None:
     import numpy as np  # type: ignore[assignment]
 
 from .config import MODE, CONF_THRESHOLD, AUTO_LEARN, AUTO_LEARN_MIN_CONF
+from .parser import split_commands
+from .entities import extract_entities
 from ..actions.app_actions import resolve_app
 from ..actions.app_actions import (
     open_app_action, close_app_action, search_action,
@@ -16,6 +18,7 @@ from ..actions.app_actions import (
     reply_action, speak, listen_text
 )
 from ..learning.collector import log_sample
+from ..reminders import schedule_reminder, start_reminder_service
 
 
 print(f"🔧 Running in {MODE.upper()} mode")
@@ -35,6 +38,7 @@ RULE_KEYWORDS = {
     "open_app": ["open", "launch", "start"],
     "close_app": ["close", "quit", "exit app", "stop"],
     "search": ["search", "find", "look up", "google"],
+    "reminder": ["remind me", "set reminder", "reminder"],
     "time": ["time", "date", "day"],
     "joke": ["joke", "funny"],
     "write_file": ["write", "note", "save"],
@@ -42,6 +46,8 @@ RULE_KEYWORDS = {
     "reply": ["hello", "hi", "hey", "yo", "sup"],
     "exit": ["bye", "exit", "stop assistant", "quit"],
 }
+
+start_reminder_service()
 
 def predict_intent_with_confidence(text: str):
     text = text.lower()
@@ -75,43 +81,63 @@ def allow_low_confidence(text, conf):
         return conf >= 0.30
     return conf >= CONF_THRESHOLD
 
-def handle_text(text: str):
-    if not text:
+def _handle_single_command(command_text: str):
+    """Handle one command after optional multi-command parsing."""
+    if not command_text:
         return
 
-    intent, conf = predict_intent_with_confidence(text)
+    entities = extract_entities(command_text)
+    intent, conf = predict_intent_with_confidence(command_text)
+
+    # Explicit reminder phrasing gets reminder intent priority.
+    if entities.get("reminder_time") and entities.get("reminder_message"):
+        if any(k in command_text.lower() for k in ["remind me", "set reminder", "reminder"]):
+            intent, conf = "reminder", 0.99
+
     print(f"🧠 Intent: {intent} (conf={conf:.2f})")
 
-    if not allow_low_confidence(text, conf):
-        speak(f"I'm not sure what you mean by '{text}'. Try: open chrome, search python, write a note, tell me a joke, or time.")
+    if intent != "reminder" and not allow_low_confidence(command_text, conf):
+        speak(f"I'm not sure what you mean by '{command_text}'. Try: open chrome, search python, write a note, tell me a joke, or time.")
         return
 
     if intent == "open_app":
-        open_app_action(text)
+        open_app_action(command_text)
 
     elif intent == "close_app":
-        if not resolve_app(text):
+        if not resolve_app(command_text):
             speak("Which app should I close?")
             return
-        close_app_action(text)
+        close_app_action(command_text)
 
     elif intent == "search":
-        search_action(text)
+        search_action(command_text)
+
+    elif intent == "reminder":
+        reminder_time = entities.get("reminder_time")
+        reminder_message = entities.get("reminder_message")
+        if not reminder_time or not reminder_message:
+            speak("Please say reminder like: remind me at 7 pm to call mom.")
+            return
+        try:
+            reminder = schedule_reminder(reminder_time, reminder_message)
+            speak(f"Reminder set for {reminder_time}: {reminder['message']}")
+        except ValueError as exc:
+            speak(str(exc))
 
     elif intent == "time":
-        time_action(text)
+        time_action(command_text)
 
     elif intent == "joke":
-        joke_action(text)
+        joke_action(command_text)
 
     elif intent == "write_file":
         write_file_action()
 
     elif intent == "read_file":
-        read_file_action(text)
+        read_file_action(command_text)
 
     elif intent == "reply":
-        reply_action(text)
+        reply_action(command_text)
 
     elif intent == "exit":
         speak("Bye!")
@@ -121,7 +147,19 @@ def handle_text(text: str):
         speak("Sorry, I didn't understand.")
 
     if model is not None and AUTO_LEARN and conf >= AUTO_LEARN_MIN_CONF:
-        log_sample(text=text, intent=intent, confidence=conf, source="auto")
+        log_sample(text=command_text, intent=intent, confidence=conf, source="auto")
+
+
+def handle_text(text: str):
+    if not text:
+        return
+
+    commands = split_commands(text)
+    if not commands:
+        return
+
+    for command in commands:
+        _handle_single_command(command)
 
     # Optional: active learning feedback
     # active_learning_feedback(text, intent)
