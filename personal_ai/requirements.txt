@@ -1,8 +1,0 @@
-scikit-learn
-pandas
-joblib
-python-dotenv
-rich
-SpeechRecognition
-pyttsx3
-pyaudio

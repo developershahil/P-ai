@@ -1,10 +1,8 @@
-"""Utilities for splitting user text into multiple assistant commands."""
+"""Command parsing utilities for splitting multi-intent user input."""
 
 import re
 from typing import List
 
-# Split only when the next phrase looks like a new command start.
-# This avoids breaking natural phrases like "call mom and dad" inside reminder messages.
 _COMMAND_STARTERS = [
     "open", "launch", "start", "close", "quit", "stop",
     "search", "find", "look", "google",
@@ -20,11 +18,7 @@ _COMMAND_SPLIT_RE = re.compile(
 
 
 def split_commands(text: str) -> List[str]:
-    """Split a user utterance into individual command strings.
-
-    Supports separators "and", "then", and "and then" when they introduce
-    a new command.
-    """
+    """Split a user utterance into individual command strings."""
     if not text:
         return []
 

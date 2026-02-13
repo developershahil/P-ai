@@ -9,8 +9,8 @@ if find_spec("numpy") is not None:
     import numpy as np  # type: ignore[assignment]
 
 from .config import MODE, CONF_THRESHOLD, AUTO_LEARN, AUTO_LEARN_MIN_CONF
-from .parser import split_commands
-from .entities import extract_entities
+from ..parser import split_commands
+from ..entities import extract_entities
 from ..actions.app_actions import resolve_app
 from ..actions.app_actions import (
     open_app_action, close_app_action, search_action,

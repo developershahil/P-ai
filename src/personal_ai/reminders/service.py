@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[1]
 REMINDERS_FILE = BASE_DIR / "data" / "reminders.json"
 
 _CHECK_INTERVAL_SECONDS = 20
@@ -39,16 +39,10 @@ def _parse_reminder_time(raw_time: str) -> Optional[datetime]:
     cleaned = " ".join(raw_time.strip().lower().split())
     now = datetime.now()
 
-    formats = ["%H:%M", "%I %p", "%I:%M %p"]
-    for fmt in formats:
+    for fmt in ["%H:%M", "%I %p", "%I:%M %p"]:
         try:
             parsed = datetime.strptime(cleaned, fmt)
-            scheduled = now.replace(
-                hour=parsed.hour,
-                minute=parsed.minute,
-                second=0,
-                microsecond=0,
-            )
+            scheduled = now.replace(hour=parsed.hour, minute=parsed.minute, second=0, microsecond=0)
             if scheduled <= now:
                 scheduled += timedelta(days=1)
             return scheduled
@@ -59,11 +53,7 @@ def _parse_reminder_time(raw_time: str) -> Optional[datetime]:
 
 
 def schedule_reminder(time_text: str, message: str) -> Dict[str, str]:
-    """Schedule a reminder and persist it to disk.
-
-    Raises:
-        ValueError: if the provided time format is not supported.
-    """
+    """Schedule a reminder and persist it to disk."""
     scheduled_dt = _parse_reminder_time(time_text)
     if scheduled_dt is None:
         raise ValueError("Invalid reminder time format. Use HH:MM or 7 pm / 7:30 pm.")
