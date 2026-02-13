@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE files
+.vscode/
+.idea/
+
+# Local runtime assets
+src/personal_ai/models/*.pkl
+src/personal_ai/data/auto_intents.csv
+src/personal_ai/data/reminders.json
+src/personal_ai/security/app_permissions.json

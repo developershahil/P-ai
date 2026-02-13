@@ -1,224 +1,62 @@
-🤖 Personal AI Assistant (Python, ML, Voice Automation)
+# Personal AI
 
-A voice & text–enabled Personal AI Assistant built with Python and Machine Learning for intent detection, permission-based app control, web search, notes, time/date, and fun responses (jokes/replies).
-Designed to run safely with explicit user permissions and supports DEV mode (Codespaces/testing) and LOCAL mode (Windows system actions).
+A modular Python personal assistant project organized with a modern `src/` layout.
 
-⚠️ System-level features (open/close apps, file access) require running locally on Windows.
-GitHub Codespaces is used for development & testing logic (DEV mode).
+## Project layout
 
-📦 Version
-
-Current release: **0.0.1**
-
-Features included in version 0.0.1:
-- Voice & text assistant with intent detection
-- Multi-command parsing (`and`, `then`, `and then`)
-- Entity extraction (app/platform/search/reminder entities)
-- Reminder scheduling with persistent JSON storage + background checker
-- Permission-based app control (DEV/LOCAL behavior)
-- Notes, time/date, jokes, and web search actions
-
-------------------------------------------------------------------------------------------------------
-
-✨ Features
-
-🎤 Voice & Text Input
-
-🧠 ML-based Intent Detection (TF-IDF + Logistic Regression)
-
-🔐 Permission-based App Control (ask once, remember decisions)
-
-🌐 Search the Web
-
-📝 Notes (write/read with overwrite/append flow)
-
-⏰ Time & Date
-
-😂 Jokes & Smart Replies
-
-🧪 DEV Mode (safe, no system calls)
-
-🖥️ LOCAL Mode (Windows) for real app control
-
-🧩 Modular Project Structure (core, actions, ml, security, tests, ui, voice)
-
-------------------------------------------------------------------------------------------------------
-
-🗂️ Project Structure
+```text
 personal_ai/
-├── actions/            # App actions (open/close/search/etc.)
-├── core/               # Assistant routing, config
-├── data/               # intents.csv (training data)
-├── ml/                 # training pipeline
-├── models/             # trained models (.pkl) [gitignored]
-├── security/           # permissions logic
-├── tests/              # tester scripts
-├── ui/                 # future UI
-├── voice/              # voice I/O
-├── main.py             # entry point
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── README.md
+├── docs/
+│   └── getting_started.md
+├── pyproject.toml
 ├── requirements.txt
-└── README.md
-
-------------------------------------------------------------------------------------------------------
-
-🚀 Getting Started
-1️⃣ Setup (Local / Codespaces)
-python -m venv .venv
-source .venv/bin/activate        # Linux/Mac/Codespaces
-# OR
-.venv\Scripts\activate           # Windows
-
-pip install -r requirements.txt
-
-# Install package in editable mode (recommended for imports + tests)
-pip install -e .
-
-2️⃣ Train the Model (module-based)
-python -m personal_ai.ml.train
-This creates:
-models/intent_model.pkl
-Model files are ignored by Git (models/*.pkl) and will update locally after each training.
-
-3️⃣ Run the Assistant (module-based)
-python -m personal_ai.main
-You’ll see:
-🔧 Running in DEV mode
-Personal AI ready.
-
-------------------------------------------------------------------------------------------------------
-
-⚙️ Modes (DEV vs LOCAL)
-
-Set mode in:
-core/config.py
-MODE = "dev"    # safe testing (Codespaces)
-# MODE = "local"  # real app control (Windows only)
-DEV → prints what would happen
-LOCAL → actually opens/closes apps (with permission)
-
-------------------------------------------------------------------------------------------------------
-
-🔐 Security & Permissions
-
-On first use, the assistant asks:
-“Do you allow me to open Chrome in the future?”
-✅ If allowed → saved to app_permissions.json
-❌ If denied → action blocked
-🔁 Permissions are reused next time
-The assistant only scans approved locations and never acts without consent.
-
-------------------------------------------------------------------------------------------------------
-
-🧪 Testing
-
-Run intent tests:
-python -m personal_ai.tests.tester
-
-Run pytest:
-pytest -q
-Example output:
-✅ PASS | 'open chrome' → open_app
-❌ FAIL | 'exit' → close_app
-
-------------------------------------------------------------------------------------------------------
-
-🧠 ML Model
-
-Features: word + char n-grams
-Classifier: Logistic Regression
-Balanced class weights
-Confidence gating for noisy inputs
-Active-learning ready (can log corrections for retraining)
-You can keep improving accuracy by adding more examples to data/intents.csv.
-
-Auto-learning (no large dataset required):
-- The assistant logs high-confidence interactions to data/auto_intents.csv.
-- The training script automatically includes auto_intents.csv when present.
-- Control with environment variables:
-  - AUTO_LEARN=0 to disable logging
-  - AUTO_LEARN_MIN_CONF=0.75 to raise/lower the confidence gate
-
-Daily auto-training + model comparison:
-- Run `python -m personal_ai.learning.deployer` to train daily (uses auto-intents + base intents).
-- Set `RUN_ONCE=1` to run once (for cron/scheduler use).
-- The trainer compares candidate vs current model and only promotes if accuracy improves.
-- Set `MODEL_IMPROVEMENT_THRESHOLD=0.01` to adjust the promotion threshold.
-
-
-🛡️ Safe Backup Branch Script
-
-Use `safe_version.py` to create a semver backup branch and push it to origin:
-
-```bash
-python safe_version.py --message "chore: backup before risky change"
+├── scripts/
+│   └── safe_version.py
+├── src/
+│   └── personal_ai/
+│       ├── __init__.py
+│       ├── actions/
+│       ├── core/
+│       ├── data/
+│       ├── entities/
+│       ├── learning/
+│       ├── ml/
+│       ├── reminders/
+│       ├── security/
+│       ├── ui/
+│       ├── voice/
+│       └── main.py
+└── tests/
+    ├── __init__.py
+    ├── test_entities.py
+    ├── test_parser.py
+    └── test_reminders.py
 ```
 
-What it does:
-- Detects current branch and working tree state
-- Computes next semantic version (`vX.Y.Z`) from existing tags
-- Creates `safe/vX.Y.Z` branch
-- Commits staged changes only when there are no unstaged/untracked files
-- Pushes backup branch to `origin`
+> Note: Compatibility wrappers are preserved for legacy imports (`core/entities.py`, `core/parser.py`) while new package entrypoints live under `personal_ai.entities` and `personal_ai.parser`.
 
-------------------------------------------------------------------------------------------------------
+## Quick start
 
-📌 Notes
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pip install -e .
+```
 
-Codespaces = dev/testing only
-Windows = required for real system actions
-Trained models are local artifacts (not pushed to GitHub)
+Run the app:
 
-------------------------------------------------------------------------------------------------------
+```bash
+python -m personal_ai.main
+```
 
-🚀 Future Enhancements
+Run tests:
 
-Planned improvements to make the assistant more powerful, accurate, and user-friendly:
-
-🔁 Auto-Learning Pipeline
-Collect real user voice/text inputs → clean noisy data → retrain model nightly → deploy new model only if accuracy improves.
-
-🧠 Advanced NLP Understanding
-Support compound commands like:
-
-“Open Chrome and search Python tutorials”
-“Type hello in notes and save it”
-
-🧩 Entity & Slot Extraction
-Detect app names, search queries, and file names separately from intent.
-
-🗣️ Better Voice Recognition
-Improve handling of accents, typos, and Hinglish (e.g., “bhai open chrome”).
-
-🖼️ Desktop UI
-Simple window UI with:
-
-Mic button
-
-Text input
-
-Conversation history
-
-📊 Model Versioning & Rollback
-Maintain:
-
-current_model.pkl
-
-candidate_model.pkl
-
-backup_model.pkl
-Automatically rollback if accuracy drops.
-
-🔐 Granular Permissions
-Per-app and per-action permissions (open, close, read, write separately).
-
-🧪 Automated Test Suite
-CI tests for intent accuracy and regression checks on every update.
-
-🌐 Plugin System
-Allow adding new skills (weather, reminders, email, music) as plug-and-play modules.
-
-------------------------------------------------------------------------------------------------------
-
-👤 Author
-Sahil Rathod
-GitHub: https://github.com/developershahil
+```bash
+pytest -q
+```

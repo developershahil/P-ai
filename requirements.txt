@@ -1,0 +1,9 @@
+joblib
+pandas
+pyaudio
+python-dotenv
+pyttsx3
+rich
+scikit-learn
+SpeechRecognition
+pytest>=8.0

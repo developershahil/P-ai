@@ -1,24 +1,44 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "personal-ai-assistant"
+name = "personal-ai"
 version = "0.1.0"
-description = "Voice and text personal AI assistant with intent classification"
+description = "Personal AI assistant with intent parsing, reminders, and modular services."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
   { name = "Sahil Rathod" }
 ]
-dependencies = []
+license = { text = "MIT" }
+dependencies = [
+  "joblib",
+  "numpy",
+  "pandas",
+  "pyttsx3",
+  "python-dotenv",
+  "rich",
+  "scikit-learn",
+  "SpeechRecognition"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[project.scripts]
+personal-ai = "personal_ai.main:main"
 
 [tool.setuptools]
+package-dir = {"" = "src"}
 include-package-data = true
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["personal_ai*"]
 
 [tool.pytest.ini_options]
-testpaths = ["personal_ai/tests"]
+testpaths = ["tests"]
 python_files = ["test_*.py"]
