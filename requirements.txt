@@ -1,6 +1,9 @@
+fastapi
 joblib
+numpy
 pandas
 pyaudio
+PySide6
 python-dotenv
 pyttsx3
 rich

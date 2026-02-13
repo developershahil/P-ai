@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "personal-ai"
 version = "0.1.0"
-description = "Personal AI assistant with intent parsing, reminders, and modular services."
+description = "Personal AI assistant with intent parsing, reminders, desktop UI, and optional API support."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -13,9 +13,11 @@ authors = [
 ]
 license = { text = "MIT" }
 dependencies = [
+  "fastapi",
   "joblib",
   "numpy",
   "pandas",
+  "PySide6",
   "pyttsx3",
   "python-dotenv",
   "rich",
@@ -27,16 +29,18 @@ dependencies = [
 dev = [
   "pytest>=8.0"
 ]
+api = [
+  "uvicorn[standard]"
+]
 
 [project.scripts]
 personal-ai = "personal_ai.main:main"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
 include = ["personal_ai*"]
 
 [tool.pytest.ini_options]

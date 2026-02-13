@@ -29,6 +29,12 @@ def _load_reminders() -> List[Dict[str, str]]:
     return []
 
 
+def list_reminders() -> List[Dict[str, str]]:
+    """Return all persisted reminders."""
+    with _lock:
+        return _load_reminders()
+
+
 def _save_reminders(reminders: List[Dict[str, str]]) -> None:
     REMINDERS_FILE.parent.mkdir(parents=True, exist_ok=True)
     with REMINDERS_FILE.open("w", encoding="utf-8") as handle:

@@ -1,44 +1,27 @@
 # Personal AI
 
-A modular Python personal assistant project organized with a modern `src/` layout.
+A modular Python personal assistant platform with:
 
-## Project layout
+- **Backend package** (`personal_ai/`) for assistant logic.
+- **Desktop UI** (`ui-desktop/`) powered by PySide6.
+- **Optional FastAPI layer** (`personal_ai/api/`) for future integrations.
+- **Future web UI placeholder** (`ui-web/`) for planned React frontend work.
+
+## Repository structure
 
 ```text
-personal_ai/
-├── CHANGELOG.md
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
-├── LICENSE
-├── README.md
-├── docs/
-│   └── getting_started.md
-├── pyproject.toml
-├── requirements.txt
-├── scripts/
-│   └── safe_version.py
-├── src/
-│   └── personal_ai/
-│       ├── __init__.py
-│       ├── actions/
-│       ├── core/
-│       ├── data/
-│       ├── entities/
-│       ├── learning/
-│       ├── ml/
-│       ├── reminders/
-│       ├── security/
-│       ├── ui/
-│       ├── voice/
-│       └── main.py
-└── tests/
-    ├── __init__.py
-    ├── test_entities.py
-    ├── test_parser.py
-    └── test_reminders.py
+.
+├── personal_ai/              # Backend package + CLI + optional API
+├── ui-desktop/               # PySide6 desktop application
+├── ui-web/                   # Placeholder for future web UI (docs only)
+├── docs/                     # Architecture and setup docs
+├── tests/                    # Pytest suite
+├── pyproject.toml            # Packaging and tool config
+├── requirements.txt          # Runtime dependencies
+└── README.md
 ```
 
-> Note: Compatibility wrappers are preserved for legacy imports (`core/entities.py`, `core/parser.py`) while new package entrypoints live under `personal_ai.entities` and `personal_ai.parser`.
+For architecture details, see `docs/ARCHITECTURE.md`.
 
 ## Quick start
 
@@ -46,16 +29,48 @@ personal_ai/
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-pip install -e .
+pip install -e .[dev]
 ```
 
-Run the app:
+## Run the CLI assistant (unchanged)
 
 ```bash
 python -m personal_ai.main
 ```
 
-Run tests:
+or via script entrypoint:
+
+```bash
+personal-ai
+```
+
+## Run the desktop UI (PySide6)
+
+```bash
+python ui-desktop/main_window.py
+```
+
+## Run the optional API server (FastAPI)
+
+Install API extras (optional):
+
+```bash
+pip install -e .[api]
+```
+
+Then run:
+
+```bash
+uvicorn personal_ai.api.app:app --reload
+```
+
+### API endpoints
+
+- `POST /ask`
+- `GET /status`
+- `GET /reminders`
+
+## Run tests
 
 ```bash
 pytest -q
