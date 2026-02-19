@@ -52,29 +52,17 @@ cp .env.example .env
 
 ```bash
 python -m personal_ai.main
-```
-
-or via script entrypoint:
-
-```bash
-personal-ai
-```
-
-## Run the desktop UI (PySide6)
-
-```bash
 python ui-desktop/main_window.py
+uvicorn personal_ai.api.app:app --reload
 ```
 
-## Run the optional API server (FastAPI)
+## Security Model
 
-Install API extras (optional):
+- **Blocked executables:** high-risk binaries are blocked (`cmd.exe`, `powershell.exe`, `regedit.exe`, `wmic.exe`).
+- **Allow-list permissions:** app/folder permissions are persisted in `personal_ai/app_permissions.json` as `allowed_apps` and `allowed_folders`.
+- **API key auth:** when `API_KEY` is set (for example in `.env`), API requests must include `x-api-key`.
 
-```bash
-pip install -e .[api]
-```
-
-Then run:
+Example API auth check:
 
 ```bash
 uvicorn personal_ai.api.app:app --reload
@@ -116,7 +104,9 @@ python scripts/build_executable.py
 
 Output binary is created under `dist/`.
 
-## Run tests
+## Testing & CI
+
+Run tests locally:
 
 ```bash
 pytest -q
