@@ -14,3 +14,12 @@ def test_schedule_reminder_persists_to_json(tmp_path: Path) -> None:
     assert stored[0]["id"] == item["id"]
     assert stored[0]["message"] == "call mom"
     assert stored[0]["status"] == "pending"
+
+
+def test_parse_reminder_time_supports_12h_and_24h() -> None:
+    assert reminder_service._parse_reminder_time("19:30") is not None
+    assert reminder_service._parse_reminder_time("7 pm") is not None
+
+
+def test_parse_reminder_time_invalid_returns_none() -> None:
+    assert reminder_service._parse_reminder_time("tomorrow morning") is None
