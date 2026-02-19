@@ -33,6 +33,11 @@ A modular Python personal assistant platform with:
 
 For architecture details, see `docs/ARCHITECTURE.md`.
 
+## Demo
+
+- Demo script: [`DEMO.md`](DEMO.md)
+- Video/GIF: _Add demo link here_
+
 ## Quick start
 
 ```bash
