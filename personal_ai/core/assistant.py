@@ -12,6 +12,8 @@ if find_spec("numpy") is not None:
     import numpy as np  # type: ignore[assignment]
 
 from .config import MODE, CONF_THRESHOLD, AUTO_LEARN, AUTO_LEARN_MIN_CONF
+from .logging_config import get_logger
+from .profile import load_profile, save_profile
 from ..parser import split_commands
 from ..entities import extract_entities
 from ..actions.app_actions import resolve_app
@@ -58,6 +60,7 @@ RULE_KEYWORDS = {
 }
 
 start_reminder_service()
+logger = get_logger(__name__)
 
 
 def predict_intent_with_confidence(text: str):
@@ -121,6 +124,7 @@ def _handle_single_command(command_text: str) -> Dict[str, Any]:
     result["intent"] = intent
     result["confidence"] = conf
     print(f"🧠 Intent: {intent} (conf={conf:.2f})")
+    logger.info("intent_predicted input=%s intent=%s conf=%.3f", command_text, intent, conf)
 
     if intent != "reminder" and not allow_low_confidence(command_text, conf):
         result["reply"] = (
@@ -202,12 +206,17 @@ def _handle_single_command(command_text: str) -> Dict[str, Any]:
     if model is not None and AUTO_LEARN and conf >= AUTO_LEARN_MIN_CONF:
         log_sample(text=command_text, intent=intent, confidence=conf, source="auto")
 
+    profile = load_profile()
+    profile["last_intent"] = intent
+    save_profile(profile)
+
     return result
 
 
 def handle_input(text: str) -> Dict[str, Any]:
     """Process text input and return structured response without changing CLI behavior."""
     if not text:
+        logger.error("empty_input_received")
         return {"reply": "Please type something.", "commands": [], "mode": MODE, "model_loaded": model is not None}
 
     commands = split_commands(text)
