@@ -4,7 +4,7 @@ A modular Python personal assistant platform with:
 
 - **Backend package** (`personal_ai/`) for assistant logic.
 - **Desktop UI** (`ui-desktop/`) powered by PySide6.
-- **Optional FastAPI layer** (`personal_ai/api/`) for future integrations.
+- **Optional FastAPI layer** (`personal_ai/api/`) for integrations.
 - **Future web UI placeholder** (`ui-web/`) for planned React frontend work.
 
 ## Repository structure
@@ -16,6 +16,7 @@ A modular Python personal assistant platform with:
 ├── ui-web/                   # Placeholder for future web UI (docs only)
 ├── docs/                     # Architecture and setup docs
 ├── tests/                    # Pytest suite
+├── scripts/                  # Utility scripts (retrain/build)
 ├── pyproject.toml            # Packaging and tool config
 ├── requirements.txt          # Runtime dependencies
 └── README.md
@@ -30,9 +31,10 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e .[dev]
+cp .env.example .env
 ```
 
-## Run the CLI assistant (unchanged)
+## Run the CLI assistant
 
 ```bash
 python -m personal_ai.main
@@ -70,8 +72,44 @@ uvicorn personal_ai.api.app:app --reload
 - `GET /status`
 - `GET /reminders`
 
+### API key auth
+
+If `API_KEY` is set in `.env`, all API endpoints require request header `x-api-key`.
+
+```bash
+curl -H "x-api-key: $API_KEY" http://127.0.0.1:8000/status
+```
+
+## ML retraining and evaluation
+
+Run the retraining pipeline:
+
+```bash
+python scripts/retrain_model.py
+```
+
+Training writes/updates:
+
+- `personal_ai/models/model_metrics.json` (accuracy, macro F1, confusion matrix)
+- `personal_ai/models/model_version.json` (model version tracking)
+
+## Build standalone executable (PyInstaller)
+
+```bash
+pip install -e .[dev]
+python scripts/build_executable.py
+```
+
+Output binary is created under `dist/`.
+
 ## Run tests
 
 ```bash
 pytest -q
 ```
+
+## Additional docs
+
+- `docs/DEVELOPMENT.md` – local dev workflow and CI
+- `docs/ROADMAP.md` – focused roadmap
+- `docs/IMPLEMENTATION_REFERENCE.md` – implementation status + logic notes
