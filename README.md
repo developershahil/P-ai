@@ -1,11 +1,20 @@
 # Personal AI
 
+[![CI](https://github.com/developershahil/P-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/developershahil/P-ai/actions/workflows/ci.yml)
+
 A modular Python personal assistant platform with:
 
 - **Backend package** (`personal_ai/`) for assistant logic.
 - **Desktop UI** (`ui-desktop/`) powered by PySide6.
 - **Optional FastAPI layer** (`personal_ai/api/`) for integrations.
 - **Future web UI placeholder** (`ui-web/`) for planned React frontend work.
+
+## Release v1.0.0
+
+**Highlights**
+- Stable multi-interface assistant runtime (CLI, desktop PySide6 UI, and FastAPI API).
+- Production-readiness updates: CI test workflow, expanded unit tests, structured logging, API key protection, and PyInstaller packaging script.
+- ML lifecycle updates: retraining pipeline, evaluation metrics (accuracy/F1/confusion matrix), and model version tracking.
 
 ## Repository structure
 
