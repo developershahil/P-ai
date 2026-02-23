@@ -22,6 +22,21 @@ pytest -q
 python scripts/retrain_model.py
 ```
 
+For automation-friendly output:
+
+```bash
+python scripts/retrain_model.py --json-output retrain_result.json
+```
+
+## 3b) Automatic retraining workflow
+
+- Workflow file: `.github/workflows/retrain.yml`
+- Triggers:
+  - Weekly schedule: Monday 03:00 UTC
+  - Manual run: `workflow_dispatch`
+- Safety gate: model promotion uses `MODEL_IMPROVEMENT_THRESHOLD` and only commits when promoted.
+- Promotion commit includes model + metrics + version artifacts under `personal_ai/models/`.
+
 ## 4) Run API with auth
 
 Set `API_KEY` in `.env`, then:

@@ -85,10 +85,31 @@ Run the retraining pipeline:
 python scripts/retrain_model.py
 ```
 
+Optional: write machine-readable retraining output for automation:
+
+```bash
+python scripts/retrain_model.py --json-output retrain_result.json
+```
+
 Training writes/updates:
 
 - `personal_ai/models/model_metrics.json` (accuracy, macro F1, confusion matrix)
 - `personal_ai/models/model_version.json` (model version tracking)
+
+### Automatic retraining (GitHub Actions)
+
+This repository includes `.github/workflows/retrain.yml` which runs retraining automatically every Monday at 03:00 UTC (and can be run manually through `workflow_dispatch`).
+
+Safety behavior:
+
+- Promotion only occurs when candidate accuracy or macro-F1 exceeds the current model by `MODEL_IMPROVEMENT_THRESHOLD`.
+- If promoted, workflow commits and pushes:
+  - `personal_ai/models/intent_model.pkl`
+  - `personal_ai/models/model_metrics.json`
+  - `personal_ai/models/model_version.json`
+- If not promoted, no commit is created.
+
+The workflow always uploads retraining artifacts (`retrain_result.json` and metrics/version files when available) for auditability.
 
 ## Build standalone executable (PyInstaller)
 

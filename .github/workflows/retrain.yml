@@ -1,0 +1,57 @@
+name: Scheduled Retraining
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[api]
+      - name: Run retraining pipeline
+        run: python scripts/retrain_model.py --json-output retrain_result.json
+      - name: Upload retraining result artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: retrain-result
+          path: |
+            retrain_result.json
+            personal_ai/models/model_metrics.json
+            personal_ai/models/model_version.json
+          if-no-files-found: warn
+      - name: Commit promoted model artifacts
+        run: |
+          ACTION="$(python -c "import json; print(json.load(open('retrain_result.json'))['action'])")"
+          if [ "$ACTION" != "promoted" ]; then
+            echo "Model was not promoted. Skipping commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add personal_ai/models/intent_model.pkl \
+                  personal_ai/models/model_metrics.json \
+                  personal_ai/models/model_version.json
+          if git diff --cached --quiet; then
+            echo "No promoted model changes to commit."
+            exit 0
+          fi
+
+          VERSION="$(python -c "import json; print(json.load(open('personal_ai/models/model_version.json'))['version'])")"
+          git commit -m "chore(model): promote retrained model v${VERSION}"
+          git push

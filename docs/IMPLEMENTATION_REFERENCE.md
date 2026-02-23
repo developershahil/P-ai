@@ -27,9 +27,11 @@ This document is a practical reference for what is implemented now, what changed
 8. Persistent logs for diagnostics.
 9. Lightweight user preference persistence.
 10. Documentation for auth/dev workflow/roadmap.
+11. Scheduled auto-retraining workflow with guarded promotion commits.
 
 ## Logic Notes
 
+- Scheduled automatic retraining workflow in `.github/workflows/retrain.yml` with promotion-only commits.
 - **Model promotion logic**: candidate is promoted only when accuracy or macro-F1 improves beyond threshold (`MODEL_IMPROVEMENT_THRESHOLD`).
 - **Versioning logic**: model version increments only on promotion; otherwise version remains unchanged.
 - **API auth logic**: auth is optional; if `API_KEY` is empty, middleware allows all requests.
