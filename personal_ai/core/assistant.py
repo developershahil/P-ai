@@ -20,6 +20,8 @@ from ..actions.app_actions import resolve_app
 from ..actions.app_actions import (
     open_app_action,
     close_app_action,
+    open_path_action,
+    close_path_action,
     search_action,
     time_action,
     joke_action,
@@ -134,19 +136,31 @@ def _handle_single_command(command_text: str) -> Dict[str, Any]:
         speak(result["reply"])
         return result
 
+    path_terms = [" file", " folder", " directory", " document"]
+
     if intent == "open_app":
-        open_app_action(command_text)
-        result["actions"].append("open_app_action")
-        result["reply"] = "Attempted to open requested application."
+        if any(term in f" {command_text.lower()}" for term in path_terms):
+            open_path_action(command_text)
+            result["actions"].append("open_path_action")
+            result["reply"] = "Attempted to open requested file or folder."
+        else:
+            open_app_action(command_text)
+            result["actions"].append("open_app_action")
+            result["reply"] = "Attempted to open requested application."
 
     elif intent == "close_app":
-        if not resolve_app(command_text):
-            result["reply"] = "Which app should I close?"
-            speak(result["reply"])
-            return result
-        close_app_action(command_text)
-        result["actions"].append("close_app_action")
-        result["reply"] = "Attempted to close requested application."
+        if any(term in f" {command_text.lower()}" for term in path_terms):
+            close_path_action(command_text)
+            result["actions"].append("close_path_action")
+            result["reply"] = "Attempted to close requested file or folder."
+        else:
+            if not resolve_app(command_text):
+                result["reply"] = "Which app should I close?"
+                speak(result["reply"])
+                return result
+            close_app_action(command_text)
+            result["actions"].append("close_app_action")
+            result["reply"] = "Attempted to close requested application."
 
     elif intent == "search":
         search_action(command_text)

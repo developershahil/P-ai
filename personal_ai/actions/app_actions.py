@@ -6,6 +6,7 @@ import subprocess
 import webbrowser
 from importlib.util import find_spec
 from pathlib import Path
+from typing import Dict, Optional
 
 from ..core.config import MODE
 from ..security.permissions import load_permissions, save_permissions, is_blocked_exe
@@ -38,6 +39,143 @@ KNOWN_APPS = {
     "youtube": "https://www.youtube.com",
     "explorer": "explorer.exe",
 }
+
+OPENED_PATH_PROCESSES: Dict[str, subprocess.Popen] = {}
+LAST_OPENED_PATH: Optional[Path] = None
+
+
+def _extract_path_query(text: str) -> str:
+    quoted = re.search(r'"([^"]+)"', text)
+    if quoted:
+        return quoted.group(1).strip()
+
+    lowered = text.lower()
+    cleaned = re.sub(r"\b(open|close|file|folder|directory|document|please|the)\b", " ", lowered)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" .")
+    return cleaned
+
+
+def _resolve_target_path(query: str) -> Optional[Path]:
+    if not query:
+        return None
+
+    expanded = Path(os.path.expandvars(os.path.expanduser(query.strip())))
+    if expanded.exists():
+        return expanded.resolve()
+
+    perms = load_permissions()
+    allowed_roots = [Path(p) for p in perms.get("allowed_folders", [])]
+    for root in allowed_roots:
+        if not root.exists() or not root.is_dir():
+            continue
+        matches = list(root.glob(query))
+        if not matches:
+            matches = list(root.rglob(query))
+        if matches:
+            return matches[0].resolve()
+
+    return None
+
+
+def _is_within_allowed_roots(target_path: Path, allowed_roots: list[Path]) -> bool:
+    resolved_target = target_path.resolve()
+    for root in allowed_roots:
+        try:
+            resolved_target.relative_to(root.resolve())
+            return True
+        except ValueError:
+            continue
+    return False
+
+
+def _ensure_folder_permission(target_path: Path) -> bool:
+    perms = load_permissions()
+    allowed_folders = [Path(p) for p in perms.get("allowed_folders", [])]
+    if _is_within_allowed_roots(target_path, allowed_folders):
+        return True
+
+    folder_to_allow = target_path if target_path.is_dir() else target_path.parent
+    speak(f"Allow access to folder {folder_to_allow}? Say yes or no.")
+    if "yes" not in listen_text().lower():
+        speak("Access denied.")
+        return False
+
+    perms.setdefault("allowed_folders", []).append(str(folder_to_allow))
+    save_permissions(perms)
+    speak("Folder permission saved.")
+    return True
+
+
+def open_path_action(text: str):
+    global LAST_OPENED_PATH
+
+    query = _extract_path_query(text)
+    if not query:
+        speak("Which file or folder should I open?")
+        query = listen_text().strip()
+
+    target_path = _resolve_target_path(query)
+    if target_path is None:
+        speak("I could not find that file or folder. Try a full path or allow that folder first.")
+        return
+
+    if not _ensure_folder_permission(target_path):
+        return
+
+    LAST_OPENED_PATH = target_path
+
+    if MODE == "dev":
+        print(f"[DEV] Would open path: {target_path}")
+        speak(f"Opening {target_path.name}.")
+        return
+
+    if target_path.is_dir():
+        if os.name == "nt":
+            subprocess.Popen(["explorer", str(target_path)])
+        else:
+            subprocess.Popen(["xdg-open", str(target_path)])
+        speak(f"Opening folder {target_path.name}.")
+        return
+
+    if os.name == "nt" and target_path.suffix.lower() in {".txt", ".log", ".md", ".json", ".csv"}:
+        proc = subprocess.Popen(["notepad.exe", str(target_path)])
+        OPENED_PATH_PROCESSES[str(target_path)] = proc
+        speak(f"Opening file {target_path.name}.")
+        return
+
+    if os.name == "nt":
+        os.startfile(str(target_path))
+    else:
+        subprocess.Popen(["xdg-open", str(target_path)])
+    speak(f"Opening file {target_path.name}.")
+
+
+def close_path_action(text: str):
+    query = _extract_path_query(text)
+    target_path = _resolve_target_path(query) if query else LAST_OPENED_PATH
+
+    if target_path is None:
+        speak("I could not determine which file or folder to close.")
+        return
+
+    proc = OPENED_PATH_PROCESSES.get(str(target_path))
+    if proc is not None and proc.poll() is None:
+        if MODE == "dev":
+            print(f"[DEV] Would close process for: {target_path}")
+        else:
+            proc.terminate()
+        speak(f"Closed file {target_path.name}.")
+        return
+
+    if target_path.is_dir() and os.name == "nt":
+        if MODE == "dev":
+            print("[DEV] Would close explorer windows.")
+        else:
+            os.system("taskkill /f /im explorer.exe")
+        speak("Closed file explorer windows.")
+        return
+
+    speak("I can only close files opened by me, or File Explorer folders.")
 
 def speak(text: str):
     if MODE == "local":

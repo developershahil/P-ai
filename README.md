@@ -85,6 +85,7 @@ uvicorn personal_ai.api.app:app --reload
 
 - **Blocked executables:** high-risk binaries are blocked (`cmd.exe`, `powershell.exe`, `regedit.exe`, `wmic.exe`).
 - **Allow-list permissions:** app/folder permissions are persisted in `personal_ai/app_permissions.json` as `allowed_apps` and `allowed_folders`.
+- **File/folder voice control:** say commands like `open file "C:\Users\you\Documents\todo.txt"` or `open folder Projects`; first-time folder access is saved in `allowed_folders`.
 - **API key auth:** when `API_KEY` is set in `.env`, API requests must include `x-api-key`.
 
 API key example:
