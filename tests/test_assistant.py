@@ -19,3 +19,32 @@ def test_handle_input_empty_text_returns_prompt():
     result = assistant.handle_input("")
     assert result["reply"] == "Please type something."
     assert result["commands"] == []
+
+
+def test_handle_chat_input_uses_provider(monkeypatch):
+    captured = {}
+
+    class FakeProvider:
+        def generate(self, messages):
+            captured["messages"] = messages
+            return "LLM reply"
+
+    monkeypatch.setattr(assistant, "get_chat_provider", lambda: FakeProvider())
+
+    history = [{"role": "assistant", "content": "Hello"}]
+    result = assistant.handle_chat_input("How are you?", history=history)
+
+    assert result["reply"] == "LLM reply"
+    assert result["commands"][0]["intent"] == "chat"
+    assert captured["messages"][0]["role"] == "system"
+    assert captured["messages"][-1] == {"role": "user", "content": "How are you?"}
+
+
+def test_handle_chat_input_falls_back_without_provider(monkeypatch):
+    fallback_payload = {"reply": "fallback", "commands": [], "mode": "dev", "model_loaded": False}
+    monkeypatch.setattr(assistant, "get_chat_provider", lambda: None)
+    monkeypatch.setattr(assistant, "handle_input", lambda _text: fallback_payload)
+
+    result = assistant.handle_chat_input("hello")
+
+    assert result == fallback_payload

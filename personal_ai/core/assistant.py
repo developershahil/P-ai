@@ -11,9 +11,11 @@ if find_spec("joblib") is not None:
 if find_spec("numpy") is not None:
     import numpy as np  # type: ignore[assignment]
 
-from .config import MODE, CONF_THRESHOLD, AUTO_LEARN, AUTO_LEARN_MIN_CONF
+from .config import MODE, CONF_THRESHOLD, AUTO_LEARN, AUTO_LEARN_MIN_CONF, SETTINGS
 from .logging_config import get_logger
 from .profile import load_profile, save_profile
+from ..llm import OpenAICompatibleProvider
+from ..llm.base import LLMProvider
 from ..parser import split_commands
 from ..entities import extract_entities
 from ..actions.app_actions import resolve_app
@@ -63,6 +65,58 @@ RULE_KEYWORDS = {
 
 start_reminder_service()
 logger = get_logger(__name__)
+
+CHAT_SYSTEM_PROMPT = (
+    "You are Personal AI, a helpful and concise assistant. "
+    "Give practical answers, keep context from recent messages, and be safe and polite."
+)
+
+
+def get_chat_provider() -> LLMProvider | None:
+    """Return an LLM provider if configured, else None for fallback behavior."""
+    try:
+        return OpenAICompatibleProvider(
+            api_key=SETTINGS.openai_api_key,
+            model=SETTINGS.openai_model,
+            base_url=SETTINGS.openai_base_url,
+        )
+    except RuntimeError as exc:
+        print(f"ℹ️ Chat mode LLM disabled: {exc}")
+        return None
+
+
+def _as_chat_messages(history: list[dict[str, str]], user_text: str) -> list[dict[str, str]]:
+    """Build a short ChatML-style payload for the provider."""
+    turns = max(0, SETTINGS.chat_history_turns)
+    trimmed = history[-(turns * 2) :] if turns else []
+    return [
+        {"role": "system", "content": CHAT_SYSTEM_PROMPT},
+        *trimmed,
+        {"role": "user", "content": user_text},
+    ]
+
+
+def handle_chat_input(text: str, history: list[dict[str, str]] | None = None) -> Dict[str, Any]:
+    """Handle desktop chat mode with optional LLM and safe fallback."""
+    history = history or []
+    provider = get_chat_provider()
+    if provider is None:
+        print("ℹ️ Falling back to built-in assistant reply behavior.")
+        return handle_input(text)
+
+    messages = _as_chat_messages(history=history, user_text=text)
+    try:
+        reply = provider.generate(messages)
+    except RuntimeError as exc:
+        print(f"⚠️ LLM error, using fallback behavior: {exc}")
+        return handle_input(text)
+
+    return {
+        "reply": reply,
+        "commands": [{"input": text, "intent": "chat", "confidence": 1.0, "reply": reply, "actions": ["llm_chat"]}],
+        "mode": MODE,
+        "model_loaded": model is not None,
+    }
 
 
 def predict_intent_with_confidence(text: str):

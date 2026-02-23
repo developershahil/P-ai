@@ -43,6 +43,10 @@ class Settings:
     log_file: Path
     error_log_file: Path
     profile_file: Path
+    openai_api_key: str
+    openai_base_url: str
+    openai_model: str
+    chat_history_turns: int
 
 
 SETTINGS = Settings(
@@ -57,6 +61,10 @@ SETTINGS = Settings(
     log_file=BASE_DIR / "logs" / "app.log",
     error_log_file=BASE_DIR / "logs" / "error.log",
     profile_file=BASE_DIR / "data" / "profile.json",
+    openai_api_key=os.getenv("OPENAI_API_KEY", ""),
+    openai_base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+    openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+    chat_history_turns=int(os.getenv("CHAT_HISTORY_TURNS", "6")),
 )
 
 MODE = SETTINGS.mode
