@@ -16,6 +16,12 @@ A modular Python personal assistant platform with:
 - Production-readiness updates: CI test workflow, expanded unit tests, structured logging, API key protection, and PyInstaller packaging script.
 - ML lifecycle updates: retraining pipeline, evaluation metrics (accuracy/F1/confusion matrix), and model version tracking.
 
+## Platform Support
+
+- Linux: CI validated
+- Windows: CI validated
+- macOS: manual test recommended
+
 ## Repository structure
 
 ```text
@@ -44,6 +50,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e .[dev]
 cp .env.example .env
+```
+
+## Windows Setup
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+pip install -e .[dev]
+copy .env.example .env
 ```
 
 ## Run the assistant
@@ -118,6 +134,13 @@ python scripts/build_executable.py
 ```
 
 Output binary is created under `dist/`.
+
+### Windows build and run
+
+```powershell
+python scripts/build_executable.py
+.\dist\personal-ai.exe
+```
 
 ## Testing & CI
 
