@@ -1,5 +1,7 @@
 """Core assistant orchestration for CLI, desktop UI, and API usage."""
 
+import os
+import random
 from importlib.util import find_spec
 from pathlib import Path
 from typing import Any, Dict, List
@@ -27,7 +29,6 @@ from ..actions.app_actions import (
     joke_action,
     write_file_action,
     read_file_action,
-    reply_action,
     speak,
     listen_text,
 )
@@ -63,6 +64,68 @@ RULE_KEYWORDS = {
 
 start_reminder_service()
 logger = get_logger(__name__)
+_NO_KEY_TIP_SHOWN = False
+
+
+def _api_key_help_text() -> str:
+    return (
+        "API keys let chat mode use an online LLM for smarter replies.\\n\\n"
+        "Set OPENAI_API_KEY and restart the app:\\n"
+        "- Windows (PowerShell): setx OPENAI_API_KEY \"your_key_here\"\\n"
+        "- Windows (CMD): set OPENAI_API_KEY=your_key_here\\n"
+        "- Linux/macOS (bash/zsh): export OPENAI_API_KEY=\"your_key_here\""
+    )
+
+
+def _local_chat_reply() -> str:
+    return random.choice(
+        [
+            "Hi! How can I help you?",
+            "Hello there! What would you like to do?",
+            "Hey 🙂 What can I do for you?",
+        ]
+    )
+
+
+def _llm_chat_reply(text: str) -> str | None:
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        return None
+
+    if find_spec("openai") is None:
+        logger.debug("openai_package_missing_falling_back_to_local_reply")
+        return None
+
+    try:
+        from openai import OpenAI  # type: ignore
+
+        client = OpenAI(api_key=api_key)
+        response = client.responses.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            input=text,
+        )
+        content = getattr(response, "output_text", "").strip()
+        return content or None
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("llm_reply_failed_falling_back_to_local error=%s", exc)
+        return None
+
+
+def _chat_reply(text: str) -> str:
+    global _NO_KEY_TIP_SHOWN
+
+    llm_reply = _llm_chat_reply(text)
+    if llm_reply:
+        return llm_reply
+
+    if not _NO_KEY_TIP_SHOWN and not os.getenv("OPENAI_API_KEY", "").strip():
+        _NO_KEY_TIP_SHOWN = True
+        return (
+            "Tip: Add an API key to unlock smarter replies. Type 'help' to see how.\\n"
+            f"{_local_chat_reply()}"
+        )
+
+    return _local_chat_reply()
 
 
 def predict_intent_with_confidence(text: str):
@@ -113,6 +176,13 @@ def _handle_single_command(command_text: str) -> Dict[str, Any]:
     }
     if not command_text:
         result["reply"] = "No command received."
+        return result
+
+    if command_text.strip().lower() == "help":
+        result["intent"] = "reply"
+        result["confidence"] = 1.0
+        result["actions"].append("chat_help")
+        result["reply"] = _api_key_help_text()
         return result
 
     entities = extract_entities(command_text)
@@ -204,9 +274,10 @@ def _handle_single_command(command_text: str) -> Dict[str, Any]:
         result["reply"] = "Read-note flow started."
 
     elif intent == "reply":
-        reply_action(command_text)
+        chat_reply = _chat_reply(command_text)
+        speak(chat_reply)
         result["actions"].append("reply_action")
-        result["reply"] = "Conversation response generated."
+        result["reply"] = chat_reply
 
     elif intent == "exit":
         result["reply"] = "Bye!"
