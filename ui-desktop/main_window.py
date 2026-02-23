@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from personal_ai.core.assistant import MODE, handle_input, model
+from personal_ai.core.assistant import MODE, handle_chat_input, model
 
 
 @dataclass
@@ -47,14 +47,15 @@ class WorkerSignals(QObject):
 class AskWorker(QRunnable):
     """Background worker to avoid blocking the UI thread."""
 
-    def __init__(self, text: str) -> None:
+    def __init__(self, text: str, history: list[dict[str, str]]) -> None:
         super().__init__()
         self._text = text
+        self._history = history
         self.signals = WorkerSignals()
 
     def run(self) -> None:
         try:
-            response = handle_input(self._text)
+            response = handle_chat_input(self._text, history=self._history)
             self.signals.completed.emit(WorkerResult(payload=response))
         except Exception:  # noqa: BLE001
             self.signals.completed.emit(WorkerResult(error=traceback.format_exc()))
@@ -69,6 +70,8 @@ class MainWindow(QMainWindow):
         self.resize(900, 600)
 
         self._thread_pool = QThreadPool.globalInstance()
+        self.chat_history: list[dict[str, str]] = []
+        self._last_user_message = ""
 
         root = QWidget(self)
         layout = QVBoxLayout(root)
@@ -120,11 +123,12 @@ class MainWindow(QMainWindow):
 
         self.chat_input.clear()
         self.append_message("You", text)
+        self._last_user_message = text
 
         self.send_button.setEnabled(False)
         self.chat_input.setEnabled(False)
 
-        worker = AskWorker(text)
+        worker = AskWorker(text, history=list(self.chat_history))
         worker.signals.completed.connect(self._on_worker_completed)
         self._thread_pool.start(worker)
 
@@ -143,6 +147,9 @@ class MainWindow(QMainWindow):
         payload = result.payload or {}
         reply = payload.get("reply", "Done.")
         self.append_message("Assistant", str(reply))
+        if self._last_user_message:
+            self.chat_history.append({"role": "user", "content": self._last_user_message})
+        self.chat_history.append({"role": "assistant", "content": str(reply)})
 
         commands = payload.get("commands", [])
         if commands:
