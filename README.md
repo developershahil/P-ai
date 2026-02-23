@@ -74,6 +74,20 @@ python -m personal_ai.main
 python ui-desktop/main_window.py
 ```
 
+## ChatGPT-like chat mode (optional)
+
+Desktop chat mode can use an OpenAI-compatible LLM for smarter replies.
+
+1. Set an API key in your environment:
+   - **Windows (PowerShell):** `$env:OPENAI_API_KEY="your_key_here"`
+   - **macOS/Linux:** `export OPENAI_API_KEY="your_key_here"`
+2. (Optional) Override endpoint/model:
+   - `OPENAI_BASE_URL` (default: `https://api.openai.com/v1`)
+   - `OPENAI_MODEL` (default: `gpt-4o-mini`)
+3. Start desktop UI: `python ui-desktop/main_window.py`
+
+If `OPENAI_API_KEY` is not set, chat mode automatically falls back to existing assistant behavior and prints a clear console message. OpenAI is optional and non-chat features continue to work without it.
+
 ## Run optional API
 
 ```bash
