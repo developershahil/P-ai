@@ -46,6 +46,9 @@ class Settings:
     openai_api_key: str
     openai_base_url: str
     openai_model: str
+    groq_api_key: str
+    groq_base_url: str
+    groq_model: str
     chat_history_turns: int
 
 
@@ -64,6 +67,9 @@ SETTINGS = Settings(
     openai_api_key=os.getenv("OPENAI_API_KEY", ""),
     openai_base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
     openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+    groq_api_key=os.getenv("GROQ_API_KEY", ""),
+    groq_base_url=os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+    groq_model=os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
     chat_history_turns=int(os.getenv("CHAT_HISTORY_TURNS", "6")),
 )
 

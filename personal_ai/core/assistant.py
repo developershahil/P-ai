@@ -72,10 +72,11 @@ _NO_KEY_TIP_SHOWN = False
 def _api_key_help_text() -> str:
     return (
         "API keys let chat mode use an online LLM for smarter replies.\\n\\n"
-        "Set OPENAI_API_KEY and restart the app:\\n"
-        "- Windows (PowerShell): setx OPENAI_API_KEY \"your_key_here\"\\n"
-        "- Windows (CMD): set OPENAI_API_KEY=your_key_here\\n"
-        "- Linux/macOS (bash/zsh): export OPENAI_API_KEY=\"your_key_here\""
+        "Set either GROQ_API_KEY (recommended) or OPENAI_API_KEY and restart the app:\\n"
+        "- Windows (PowerShell): setx GROQ_API_KEY \"your_key_here\"\\n"
+        "- Windows (CMD): set GROQ_API_KEY=your_key_here\\n"
+        "- Linux/macOS (bash/zsh): export GROQ_API_KEY=\"your_key_here\"\\n"
+        "(OpenAI is also supported with OPENAI_API_KEY.)"
     )
 
 
@@ -90,24 +91,28 @@ def _local_chat_reply() -> str:
 
 
 def _llm_chat_reply(text: str) -> str | None:
-    api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    if not api_key:
-        return None
+    provider: OpenAICompatibleProvider | None = None
 
-    if find_spec("openai") is None:
-        logger.debug("openai_package_missing_falling_back_to_local_reply")
+    if SETTINGS.groq_api_key.strip():
+        provider = OpenAICompatibleProvider(
+            api_key=SETTINGS.groq_api_key,
+            model=SETTINGS.groq_model,
+            base_url=SETTINGS.groq_base_url,
+        )
+    elif SETTINGS.openai_api_key.strip():
+        provider = OpenAICompatibleProvider(
+            api_key=SETTINGS.openai_api_key,
+            model=SETTINGS.openai_model,
+            base_url=SETTINGS.openai_base_url,
+        )
+    else:
         return None
 
     try:
-        from openai import OpenAI  # type: ignore
-
-        client = OpenAI(api_key=api_key)
-        response = client.responses.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            input=text,
-        )
-        content = getattr(response, "output_text", "").strip()
-        return content or None
+        return provider.generate([
+            {"role": "system", "content": CHAT_SYSTEM_PROMPT},
+            {"role": "user", "content": text},
+        ])
     except Exception as exc:  # noqa: BLE001
         logger.debug("llm_reply_failed_falling_back_to_local error=%s", exc)
         return None
@@ -120,7 +125,8 @@ def _chat_reply(text: str) -> str:
     if llm_reply:
         return llm_reply
 
-    if not _NO_KEY_TIP_SHOWN and not os.getenv("OPENAI_API_KEY", "").strip():
+    has_any_llm_key = bool(SETTINGS.groq_api_key.strip() or SETTINGS.openai_api_key.strip())
+    if not _NO_KEY_TIP_SHOWN and not has_any_llm_key:
         _NO_KEY_TIP_SHOWN = True
         return (
             "Tip: Add an API key to unlock smarter replies. Type 'help' to see how.\\n"
@@ -138,6 +144,13 @@ CHAT_SYSTEM_PROMPT = (
 def get_chat_provider() -> LLMProvider | None:
     """Return an LLM provider if configured, else None for fallback behavior."""
     try:
+        if SETTINGS.groq_api_key.strip():
+            return OpenAICompatibleProvider(
+                api_key=SETTINGS.groq_api_key,
+                model=SETTINGS.groq_model,
+                base_url=SETTINGS.groq_base_url,
+            )
+
         return OpenAICompatibleProvider(
             api_key=SETTINGS.openai_api_key,
             model=SETTINGS.openai_model,

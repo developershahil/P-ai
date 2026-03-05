@@ -62,6 +62,21 @@ pip install -e .[dev]
 copy .env.example .env
 ```
 
+## Windows one-command test + run
+
+Use this PowerShell helper to validate text flow, optional voice dependencies, and security guardrails before launching:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\windows_test_and_run.ps1
+```
+
+Optional launch flags:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\windows_test_and_run.ps1 -StartCli
+powershell -ExecutionPolicy Bypass -File .\scripts\windows_test_and_run.ps1 -StartDesktop
+```
+
 ## Run the assistant
 
 ```bash
@@ -76,17 +91,21 @@ python ui-desktop/main_window.py
 
 ## ChatGPT-like chat mode (optional)
 
-Desktop chat mode can use an OpenAI-compatible LLM for smarter replies.
+Desktop chat mode can use a Groq or OpenAI-compatible LLM for smarter replies.
 
-1. Set an API key in your environment:
-   - **Windows (PowerShell):** `$env:OPENAI_API_KEY="your_key_here"`
-   - **macOS/Linux:** `export OPENAI_API_KEY="your_key_here"`
+1. Set an API key in your environment (Groq preferred):
+   - **Windows (PowerShell):** `$env:GROQ_API_KEY="your_key_here"`
+   - **macOS/Linux:** `export GROQ_API_KEY="your_key_here"`
 2. (Optional) Override endpoint/model:
+   - `GROQ_BASE_URL` (default: `https://api.groq.com/openai/v1`)
+   - `GROQ_MODEL` (default: `llama-3.1-8b-instant`)
+3. Optional OpenAI fallback variables:
+   - `OPENAI_API_KEY`
    - `OPENAI_BASE_URL` (default: `https://api.openai.com/v1`)
    - `OPENAI_MODEL` (default: `gpt-4o-mini`)
-3. Start desktop UI: `python ui-desktop/main_window.py`
+4. Start desktop UI: `python ui-desktop/main_window.py`
 
-If `OPENAI_API_KEY` is not set, chat mode automatically falls back to existing assistant behavior and prints a clear console message. OpenAI is optional and non-chat features continue to work without it.
+If no LLM key is set, chat mode automatically falls back to existing assistant behavior and prints a clear console message. Non-chat features continue to work without Groq/OpenAI.
 
 ## Run optional API
 
