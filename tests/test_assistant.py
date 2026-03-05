@@ -52,6 +52,16 @@ def test_handle_chat_input_falls_back_without_provider(monkeypatch):
 
 def test_chat_reply_without_openai_api_key_uses_local_fallback(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.setattr(assistant, "SETTINGS", type("S", (), {
+        "groq_api_key": "",
+        "openai_api_key": "",
+        "groq_model": "",
+        "groq_base_url": "",
+        "openai_model": "",
+        "openai_base_url": "",
+        "chat_history_turns": 6,
+    })())
     monkeypatch.setattr(assistant, "_NO_KEY_TIP_SHOWN", False)
     monkeypatch.setattr(assistant, "predict_intent_with_confidence", lambda _text: ("reply", 0.95))
     monkeypatch.setattr(assistant, "load_profile", lambda: {"user_name": "", "preferred_mode": "", "last_intent": ""})
@@ -68,6 +78,24 @@ def test_help_command_returns_api_key_setup_instructions():
     result = assistant.handle_input("help")
 
     assert "PowerShell" in result["reply"]
-    assert "setx OPENAI_API_KEY \"your_key_here\"" in result["reply"]
-    assert "set OPENAI_API_KEY=your_key_here" in result["reply"]
-    assert "export OPENAI_API_KEY=\"your_key_here\"" in result["reply"]
+    assert "setx GROQ_API_KEY \"your_key_here\"" in result["reply"]
+    assert "set GROQ_API_KEY=your_key_here" in result["reply"]
+    assert "export GROQ_API_KEY=\"your_key_here\"" in result["reply"]
+
+
+def test_get_chat_provider_prefers_groq(monkeypatch):
+    monkeypatch.setattr(assistant, "SETTINGS", type("S", (), {
+        "groq_api_key": "groq-test",
+        "groq_base_url": "https://api.groq.com/openai/v1",
+        "groq_model": "llama-3.1-8b-instant",
+        "openai_api_key": "openai-test",
+        "openai_base_url": "https://api.openai.com/v1",
+        "openai_model": "gpt-4o-mini",
+        "chat_history_turns": 6,
+    })())
+
+    provider = assistant.get_chat_provider()
+
+    assert provider is not None
+    assert provider.api_key == "groq-test"
+    assert provider.base_url == "https://api.groq.com/openai/v1"
